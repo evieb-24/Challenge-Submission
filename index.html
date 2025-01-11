@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOV.UK - Sign in</title>
+    <style>
+        :root {
+            --govuk-blue: #1d70b8;
+            --govuk-dark: #0b0c0c;
+            --govuk-green: #00703c;
+            --govuk-error: #d4351c;
+            --govuk-grey: #505a5f;
+            --govuk-border: #b1b4b6;
+        }
+
+        body {
+            font-family: "GDS Transport", arial, sans-serif;
+            margin: 0;
+            background: #f3f2f1;
+        }
+
+        .govuk-header {
+            background: var(--govuk-dark);
+            padding: 10px 0;
+            border-bottom: 10px solid var(--govuk-blue);
+        }
+
+        .govuk-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .govuk-header__logotype {
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .govuk-heading-l, .govuk-heading-m {
+            font-weight: bold;
+            margin: 30px 0 20px;
+        }
+        .govuk-heading-l { font-size: 36px; }
+        .govuk-heading-m { font-size: 24px; }
+
+        .govuk-form-group {
+            margin-bottom: 20px;
+        }
+
+        .govuk-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .govuk-input, .govuk-select {
+            width: 100%;
+            max-width: 300px;
+            height: 40px;
+            padding: 5px;
+            border: 2px solid var(--govuk-dark);
+        }
+
+        .govuk-button {
+            background: var(--govuk-green);
+            color: white;
+            border: 0;
+            padding: 10px 20px;
+            font-size: 19px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .govuk-button:hover { background: #005a30; }
+
+        .govuk-error-message {
+            color: var(--govuk-error);
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .govuk-card {
+            border: 1px solid var(--govuk-border);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .govuk-link {
+            color: var(--govuk-blue);
+            text-decoration: underline;
+        }
+
+        .govuk-hint { color: var(--govuk-grey); }
+
+        .govuk-radios__item, .govuk-checkboxes__item {
+            margin: 10px 0;
+        }
+
+        [id$="-page"]:not(.active) { display: none; }
+    </style>
+</head>
+<body>
+    <header class="govuk-header">
+        <div class="govuk-container">
+            <a href="#" class="govuk-header__logotype">GOV.UK</a>
+        </div>
+    </header>
+
+    <main class="govuk-container">
+        <div id="signin-page" class="active">
+            <h1 class="govuk-heading-l">Sign in</h1>
+            <form id="signin-form">
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="username">Username</label>
+                    <input class="govuk-input" id="username" required>
+                    <span class="govuk-error-message" id="username-error">Enter your username</span>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="password">Password</label>
+                    <input class="govuk-input" id="password" type="password" required>
+                    <span class="govuk-error-message" id="password-error">Enter your password</span>
+                </div>
+
+                <div class="govuk-form-group">
+                    <input type="checkbox" id="save-credentials">
+                    <label for="save-credentials">Save my sign in details</label>
+                </div>
+
+                <button type="submit" class="govuk-button">Sign in</button>
+            </form>
+        </div>
+
+        <div id="survey-page">
+            <h1 class="govuk-heading-l">Survey</h1>
+            <form id="survey-form">
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="age">What is your age?</label>
+                    <input class="govuk-input" id="age" type="number" min="0" max="120" required>
+                    <span class="govuk-error-message" id="age-error">Please enter a valid age</span>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="occupation">What is your occupation?</label>
+                    <input class="govuk-input" id="occupation" required>
+                    <span class="govuk-error-message" id="occupation-error">Please enter your occupation</span>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="education">What is your highest level of education?</label>
+                    <select class="govuk-select" id="education" required>
+                        <option value="">Please select</option>
+                        <option value="no-formal">No formal qualifications</option>
+                        <option value="gcse">GCSEs or equivalent</option>
+                        <option value="a-level">A-levels or equivalent</option>
+                        <option value="degree">Bachelor's degree</option>
+                        <option value="postgrad">Postgraduate degree</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="govuk-error-message" id="education-error">Please select your education level</span>
+                </div>
+
+                <div class="govuk-form-group">
+                    <fieldset>
+                        <legend class="govuk-label">Do you have a valid driving licence?</legend>
+                        <div class="govuk-radios">
+                            <div class="govuk-radios__item">
+                                <input type="radio" id="licence-yes" name="driving-licence" value="yes" required>
+                                <label for="licence-yes">Yes</label>
+                            </div>
+                            <div class="govuk-radios__item">
+                                <input type="radio" id="licence-no" name="driving-licence" value="no">
+                                <label for="licence-no">No</label>
+                            </div>
+                        </div>
+                        <span class="govuk-error-message" id="licence-error">Please select an option</span>
+                    </fieldset>
+                </div>
+
+                <div class="govuk-form-group">
+                    <fieldset>
+                        <legend class="govuk-label">Do you own any of the following?</legend>
+                        <div class="govuk-checkboxes">
+                            <div class="govuk-checkboxes__item">
+                                <input type="checkbox" id="own-home" name="ownership" value="home">
+                                <label for="own-home">Home</label>
+                            </div>
+                            <div class="govuk-checkboxes__item">
+                                <input type="checkbox" id="own-business" name="ownership" value="business">
+                                <label for="own-business">Business</label>
+                            </div>
+                            <div class="govuk-checkboxes__item">
+                                <input type="checkbox" id="own-car" name="ownership" value="car">
+                                <label for="own-car">Car</label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <button type="submit" class="govuk-button">Submit</button>
+            </form>
+        </div>
+
+        <div id="welcome-page">
+            <h1 class="govuk-heading-l">Welcome to GOV.UK</h1>
+            <p>Based on your information, we've recommended some pages that might be helpful:</p>
+            <div id="recommendations-container"></div>
+        </div>
+    </main>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const store = {
+            get: key => JSON.parse(localStorage.getItem(key)),
+            set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+            remove: key => localStorage.removeItem(key)
+        };
+
+        const RECOMMENDATIONS = {
+            youth: {
+                title: 'Information for Young People',
+                items: [
+                    ['Provisional licence', 'Apply for your first provisional driving licence', '/apply-first-provisional-driving-licence'],
+                    ['Young workers\' rights', 'Understanding your rights as a young worker', '/young-workers-rights']
+                ]
+            },
+            ownership: {
+                home: ['Property ownership', 'Information about property ownership and council tax', '/browse/housing-local-services'],
+                business: ['Running a business', 'Essential information for business owners', '/browse/business'],
+                car: ['Vehicle ownership', 'Information about vehicle tax and MOT', '/browse/driving/vehicle-ownership']
+            },
+            driving: {
+                yes: ['Driving licence', 'Keep your driving licence up to date', '/browse/driving/driving-licences'],
+                no: ['Learning to drive', 'Everything you need to know about learning to drive', '/browse/driving/learning-to-drive']
+            },
+            education: {
+                'gcse': ['Further education', 'Explore opportunities for further education', '/further-education-courses'],
+                'a-level': ['University', 'Information about universities and student loans', '/browse/education/universities-higher-education'],
+                'degree': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills'],
+                'postgrad': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills']
+            }
+        };
+
+        function showPage(id) {
+            document.querySelectorAll('[id$="-page"]').forEach(page => {
+                page.style.display = page.id === id ? 'block' : 'none';
+                page.classList.toggle('active', page.id === id);
+            });
+        }
+
+        function validateForm(data, rules) {
+            return !Object.entries(rules).some(([field, test]) => {
+                const error = $(field + '-error');
+                const invalid = test(data[field]);
+                if (error) error.style.display = invalid ? 'block' : 'none';
+                return invalid;
+            });
+        }
+
+        function getRecommendations(userData) {
+            const recs = [];
+            
+            if (userData.age >= 16 && userData.age <= 18) {
+                recs.push(...RECOMMENDATIONS.youth.items);
+            }
+
+            userData.ownership?.forEach(item => {
+                if (RECOMMENDATIONS.ownership[item]) {
+                    recs.push(RECOMMENDATIONS.ownership[item]);
+                }
+            });
+
+            if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
+                recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
+            }
+
+            if (RECOMMENDATIONS.education[userData.education]) {
+                recs.push(RECOMMENDATIONS.education[userData.education]);
+            }
+
+            return recs.map(([title, description, link]) => `
+                <div class="govuk-card">
+                    <h2 class="govuk-heading-m">${title}</h2>
+                    <p>${description}</p>
+                    <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
+                </div>
+            `).join('');
+        }
+
+        // Event Handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = store.get('userData');
+            const username = store.get('username');
+            const password = store.get('password');
+            
+            if (username && password) {
+                $('username').value = username;
+                $('password').value = password;
+                $('save-credentials').checked = true;
+                if (userData) {
+                    showPage('welcome-page');
+                    $('recommendations-container').innerHTML = getRecommendations(userData);
+                }
+            }
+        });
+
+        $('signin-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const username = $('username').value;
+            const password = $('password').value;
+            
+            if (validateForm({username, password}, {
+                username: v => !v,
+                password: v => !v
+            })) {
+                if ($('save-credentials').checked) {
+                    store.set('username', username);
+                    store.set('password', password);
+                } else {
+                    ['username', 'password', 'userData'].forEach(store.remove);
+                }
+                
+                const userData = store.get('userData');
+                showPage(userData ? 'welcome-page' : 'survey-page');
+                if (userData) {
+                    $('recommendations-container').innerHTML = getRecommendations(userData);
+                }
+            }
+        });
+
+        $('survey-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const userData = {
+                age: parseInt($('age').value),
+                occupation: $('occupation').value,
+                education: $('education').value,
+                drivingLicence: document.querySelector('input[name="driving-licence"]:checked')?.value,
+                ownership: Array.from(document.querySelectorAll('input[name="ownership"]:checked')).map(cb => cb.value)
+            };
+
+            if (validateForm(userData, {
+                age: v => !v || v < 0 || v > 120,
+                occupation: v => !v,
+                education: v => !v,
+                drivingLicence: v => !v
+            })) {
+                store.set('userData', userData);
+                showPage('welcome-page');
+                $('recommendations-container').innerHTML = getRecommendations(userData);
+            }
+        });
+    </script>
+</body>
+</html>
