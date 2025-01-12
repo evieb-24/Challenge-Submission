@@ -37,7 +37,7 @@
             font-size: 30px;
             font-weight: bold;
             text-decoration: none;
-            cursor: pointer; /* Makes it clear the logo is clickable */
+            cursor: pointer; /* Makes logo clickable */
         }
 
         .govuk-heading-l, .govuk-heading-m {
@@ -112,6 +112,7 @@
     </header>
 
     <main class="govuk-container">
+        <!-- Sign in page -->
         <div id="signin-page" class="active">
             <h1 class="govuk-heading-l">Sign in</h1>
             <form id="signin-form">
@@ -136,6 +137,7 @@
             </form>
         </div>
 
+        <!-- Survey page -->
         <div id="survey-page">
             <h1 class="govuk-heading-l">Survey</h1>
             <form id="survey-form">
@@ -206,6 +208,7 @@
             </form>
         </div>
 
+        <!-- Welcome page -->
         <div id="welcome-page">
             <h1 class="govuk-heading-l">Welcome to GOV.UK</h1>
             <p>Based on your information, we've recommended some pages that might be helpful:</p>
@@ -221,31 +224,6 @@
             remove: key => localStorage.removeItem(key)
         };
 
-        const RECOMMENDATIONS = {
-            youth: {
-                title: 'Information for Young People',
-                items: [
-                    ['Provisional licence', 'Apply for your first provisional driving licence', '/apply-first-provisional-driving-licence'],
-                    ['Young workers\' rights', 'Understanding your rights as a young worker', '/young-workers-rights']
-                ]
-            },
-            ownership: {
-                home: ['Property ownership', 'Information about property ownership and council tax', '/browse/housing-local-services'],
-                business: ['Running a business', 'Essential information for business owners', '/browse/business'],
-                car: ['Vehicle ownership', 'Information about vehicle tax and MOT', '/browse/driving/vehicle-ownership']
-            },
-            driving: {
-                yes: ['Driving licence', 'Keep your driving licence up to date', '/browse/driving/driving-licences'],
-                no: ['Learning to drive', 'Everything you need to know about learning to drive', '/browse/driving/learning-to-drive']
-            },
-            education: {
-                'gcse': ['Further education', 'Explore opportunities for further education', '/further-education-courses'],
-                'a-level': ['University', 'Information about universities and student loans', '/browse/education/universities-higher-education'],
-                'degree': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills'],
-                'postgrad': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills']
-            }
-        };
-
         function showPage(id) {
             document.querySelectorAll('[id$="-page"]').forEach(page => {
                 page.style.display = page.id === id ? 'block' : 'none';
@@ -253,36 +231,9 @@
             });
         }
 
-        function getRecommendations(userData) {
-            let recommendations = [];
-            if (userData.age && userData.age < 30) {
-                recommendations.push(RECOMMENDATIONS.youth);
-            }
-            if (userData.ownership) {
-                userData.ownership.split(',').forEach(item => {
-                    recommendations.push(RECOMMENDATIONS.ownership[item]);
-                });
-            }
-            if (userData['driving-licence'] === 'yes') {
-                recommendations.push(RECOMMENDATIONS.driving.yes);
-            } else {
-                recommendations.push(RECOMMENDATIONS.driving.no);
-            }
-            if (userData.education) {
-                recommendations.push(RECOMMENDATIONS.education[userData.education]);
-            }
-            return recommendations.map(rec => `
-                <div class="govuk-card">
-                    <h3 class="govuk-heading-m">${rec.title}</h3>
-                    <ul class="govuk-list govuk-list--bullet">
-                        ${rec.items.map(item => `<li><a class="govuk-link" href="${item[1]}">${item[0]}</a></li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-        }
-
+        // Event Handlers
         document.addEventListener('DOMContentLoaded', () => {
-            // Add event listener to the logo for returning to the sign-in page
+            // Return to sign-in page when logo is clicked
             document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
                 showPage('signin-page');
             });
@@ -302,7 +253,81 @@
             }
         });
 
-        // Rest of your existing JavaScript logic goes here...
+        function getRecommendations(userData) {
+            const recs = [];
+            
+            if (userData.age >= 16 && userData.age <= 18) {
+                recs.push(...RECOMMENDATIONS.youth.items);
+            }
+
+            userData.ownership?.forEach(item => {
+                if (RECOMMENDATIONS.ownership[item]) {
+                    recs.push(RECOMMENDATIONS.ownership[item]);
+                }
+            });
+
+            if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
+                recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
+            }
+
+            if (RECOMMENDATIONS.education[userData.education]) {
+                recs.push(RECOMMENDATIONS.education[userData.education]);
+            }
+
+            return recs.map(([title, description, link]) => 
+                `<div class="govuk-card">
+                    <h2 class="govuk-heading-m">${title}</h2>
+                    <p>${description}</p>
+                    <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
+                </div>`
+            ).join('');
+        }
+
+        $('signin-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const username = $('username').value;
+            const password = $('password').value;
+            
+            if (validateForm({username, password}, {
+                username: v => !v,
+                password: v => !v
+            })) {
+                if ($('save-credentials').checked) {
+                    store.set('username', username);
+                    store.set('password', password);
+                } else {
+                    ['username', 'password', 'userData'].forEach(store.remove);
+                }
+                
+                const userData = store.get('userData');
+                showPage(userData ? 'welcome-page' : 'survey-page');
+                if (userData) {
+                    $('recommendations-container').innerHTML = getRecommendations(userData);
+                }
+            }
+        });
+
+        $('survey-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const userData = {
+                age: parseInt($('age').value),
+                occupation: $('occupation').value,
+                education: $('education').value,
+                drivingLicence: document.querySelector('input[name="driving-licence"]:checked')?.value,
+                ownership: Array.from(document.querySelectorAll('input[name="ownership"]:checked')).map(cb => cb.value)
+            };
+
+            if (validateForm(userData, {
+                age: v => !v || v < 0 || v > 120,
+                occupation: v => !v,
+                education: v => !v,
+                drivingLicence: v => !v
+            })) {
+                store.set('userData', userData);
+                showPage('welcome-page');
+                $('recommendations-container').innerHTML = getRecommendations(userData);
+            }
+        });
     </script>
 </body>
 </html>
