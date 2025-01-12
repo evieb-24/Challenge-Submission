@@ -221,11 +221,64 @@
             remove: key => localStorage.removeItem(key)
         };
 
+        const RECOMMENDATIONS = {
+            youth: {
+                title: 'Information for Young People',
+                items: [
+                    ['Provisional licence', 'Apply for your first provisional driving licence', '/apply-first-provisional-driving-licence'],
+                    ['Young workers\' rights', 'Understanding your rights as a young worker', '/young-workers-rights']
+                ]
+            },
+            ownership: {
+                home: ['Property ownership', 'Information about property ownership and council tax', '/browse/housing-local-services'],
+                business: ['Running a business', 'Essential information for business owners', '/browse/business'],
+                car: ['Vehicle ownership', 'Information about vehicle tax and MOT', '/browse/driving/vehicle-ownership']
+            },
+            driving: {
+                yes: ['Driving licence', 'Keep your driving licence up to date', '/browse/driving/driving-licences'],
+                no: ['Learning to drive', 'Everything you need to know about learning to drive', '/browse/driving/learning-to-drive']
+            },
+            education: {
+                'gcse': ['Further education', 'Explore opportunities for further education', '/further-education-courses'],
+                'a-level': ['University', 'Information about universities and student loans', '/browse/education/universities-higher-education'],
+                'degree': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills'],
+                'postgrad': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills']
+            }
+        };
+
         function showPage(id) {
             document.querySelectorAll('[id$="-page"]').forEach(page => {
                 page.style.display = page.id === id ? 'block' : 'none';
                 page.classList.toggle('active', page.id === id);
             });
+        }
+
+        function getRecommendations(userData) {
+            let recommendations = [];
+            if (userData.age && userData.age < 30) {
+                recommendations.push(RECOMMENDATIONS.youth);
+            }
+            if (userData.ownership) {
+                userData.ownership.split(',').forEach(item => {
+                    recommendations.push(RECOMMENDATIONS.ownership[item]);
+                });
+            }
+            if (userData['driving-licence'] === 'yes') {
+                recommendations.push(RECOMMENDATIONS.driving.yes);
+            } else {
+                recommendations.push(RECOMMENDATIONS.driving.no);
+            }
+            if (userData.education) {
+                recommendations.push(RECOMMENDATIONS.education[userData.education]);
+            }
+            return recommendations.map(rec => `
+                <div class="govuk-card">
+                    <h3 class="govuk-heading-m">${rec.title}</h3>
+                    <ul class="govuk-list govuk-list--bullet">
+                        ${rec.items.map(item => `<li><a class="govuk-link" href="${item[1]}">${item[0]}</a></li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
