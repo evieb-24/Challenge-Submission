@@ -15,7 +15,7 @@
         }
 
         body {
-            font-family: "GDS Transport", arial, sans-serif;
+            font-family: arial, sans-serif;
             margin: 0;
             background: #f3f2f1;
         }
@@ -37,6 +37,19 @@
             font-size: 30px;
             font-weight: bold;
             text-decoration: none;
+            display: inline-block;
+        }
+
+        .govuk-header__navigation {
+            float: right;
+            margin-top: 5px;
+        }
+
+        .govuk-header__navigation-item {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            cursor: pointer;
         }
 
         .govuk-heading-l, .govuk-heading-m {
@@ -100,13 +113,18 @@
             margin: 10px 0;
         }
 
-        [id$="-page"]:not(.active) { display: none; }
+        [id$="-page"]:not(.active) { 
+            display: none; 
+        }
     </style>
 </head>
 <body>
     <header class="govuk-header">
         <div class="govuk-container">
             <a href="#" class="govuk-header__logotype">GOV.UK</a>
+            <nav class="govuk-header__navigation">
+                <a id="signout-link" class="govuk-header__navigation-item" style="display: none;">Sign out</a>
+            </nav>
         </div>
     </header>
 
@@ -116,13 +134,13 @@
             <form id="signin-form">
                 <div class="govuk-form-group">
                     <label class="govuk-label" for="username">Username</label>
-                    <input class="govuk-input" id="username" required>
+                    <input class="govuk-input" id="username" name="username" required>
                     <span class="govuk-error-message" id="username-error">Enter your username</span>
                 </div>
 
                 <div class="govuk-form-group">
                     <label class="govuk-label" for="password">Password</label>
-                    <input class="govuk-input" id="password" type="password" required>
+                    <input class="govuk-input" id="password" name="password" type="password" required>
                     <span class="govuk-error-message" id="password-error">Enter your password</span>
                 </div>
 
@@ -213,127 +231,88 @@
     </main>
 
     <script>
+        // Helper function for DOM selection
         const $ = id => document.getElementById(id);
+
+        // LocalStorage wrapper
         const store = {
             get: key => JSON.parse(localStorage.getItem(key)),
             set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
             remove: key => localStorage.removeItem(key)
         };
 
-        const RECOMMENDATIONS = {
-            youth: {
-                title: 'Information for Young People',
-                items: [
-                    ['Provisional licence', 'Apply for your first provisional driving licence', '/apply-first-provisional-driving-licence'],
-                    ['Young workers\' rights', 'Understanding your rights as a young worker', '/young-workers-rights']
-                ]
-            },
-            ownership: {
-                home: ['Property ownership', 'Information about property ownership and council tax', '/browse/housing-local-services'],
-                business: ['Running a business', 'Essential information for business owners', '/browse/business'],
-                car: ['Vehicle ownership', 'Information about vehicle tax and MOT', '/browse/driving/vehicle-ownership']
-            },
-            driving: {
-                yes: ['Driving licence', 'Keep your driving licence up to date', '/browse/driving/driving-licences'],
-                no: ['Learning to drive', 'Everything you need to know about learning to drive', '/browse/driving/learning-to-drive']
-            },
-            education: {
-                'gcse': ['Further education', 'Explore opportunities for further education', '/further-education-courses'],
-                'a-level': ['University', 'Information about universities and student loans', '/browse/education/universities-higher-education'],
-                'degree': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills'],
-                'postgrad': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills']
+        // Session management
+        const session = {
+            isAuthenticated: () => store.get('isAuthenticated') === true,
+            setAuthenticated: (value) => store.set('isAuthenticated', value),
+            clear: () => {
+                store.remove('isAuthenticated');
+                store.remove('userData');
+                store.remove('username');
+                store.remove('password');
             }
         };
 
+        // Recommendations data
+        const RECOMMENDATIONS = {
+            youth: {
+                items: [
+                    ['Education and Learning', 'Find out about education options and financial support', '/education'],
+                    ['Career Planning', 'Discover career opportunities and apprenticeships', '/careers']
+                ]
+            },
+            ownership: {
+                home: ['Council Tax', 'Learn about council tax rates and payments', '/council-tax'],
+                business: ['Business Support', 'Get help and support for your business', '/business'],
+                car: ['Vehicle Tax', 'Tax your vehicle and learn about road regulations', '/vehicle-tax']
+            },
+            driving: {
+                yes: ['Driving Licence', 'Manage your driving licence and vehicle information', '/driving'],
+                no: ['Learning to Drive', 'Start your journey to getting a driving licence', '/learn-to-drive']
+            },
+            education: {
+                'degree': ['Higher Education', 'Information about further studies and qualifications', '/higher-education'],
+                'gcse': ['Further Education', 'Explore your options after GCSEs', '/further-education']
+            }
+        };
+
+        // Show specific page and hide others
         function showPage(id) {
             document.querySelectorAll('[id$="-page"]').forEach(page => {
-                page.style.display = page.id === id ? 'block' : 'none';
                 page.classList.toggle('active', page.id === id);
             });
+            $('signout-link').style.display = session.isAuthenticated() ? 'inline' : 'none';
         }
 
-        function validateForm(data, rules) {
-            return !Object.entries(rules).some(([field, test]) => {
-                const error = $(field + '-error');
-                const invalid = test(data[field]);
-                if (error) error.style.display = invalid ? 'block' : 'none';
-                return invalid;
-            });
-        }
-
-        function getRecommendations(userData) {
-            const recs = [];
-            
-            if (userData.age >= 16 && userData.age <= 18) {
-                recs.push(...RECOMMENDATIONS.youth.items);
-            }
-
-            userData.ownership?.forEach(item => {
-                if (RECOMMENDATIONS.ownership[item]) {
-                    recs.push(RECOMMENDATIONS.ownership[item]);
-                }
-            });
-
-            if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
-                recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
-            }
-
-            if (RECOMMENDATIONS.education[userData.education]) {
-                recs.push(RECOMMENDATIONS.education[userData.education]);
-            }
-
-            return recs.map(([title, description, link]) => 
-                <div class="govuk-card">
-                    <h2 class="govuk-heading-m">${title}</h2>
-                    <p>${description}</p>
-                    <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
-                </div>
-            ).join('');
-        }
-
-        // Event Handlers
-        document.addEventListener('DOMContentLoaded', () => {
-            const userData = store.get('userData');
-            const username = store.get('username');
-            const password = store.get('password');
-            
-            if (username && password) {
-                $('username').value = username;
-                $('password').value = password;
-                $('save-credentials').checked = true;
-                if (userData) {
-                    showPage('welcome-page');
-                    $('recommendations-container').innerHTML = getRecommendations(userData);
-                }
-            }
-        });
-
+        // Handle sign-in form submission
         $('signin-form').addEventListener('submit', e => {
             e.preventDefault();
+            
             const username = $('username').value;
             const password = $('password').value;
-            
-            if (validateForm({username, password}, {
-                username: v => !v,
-                password: v => !v
-            })) {
+
+            // Test credentials check
+            if (username === 'testuser' && password === 'password123') {
                 if ($('save-credentials').checked) {
                     store.set('username', username);
                     store.set('password', password);
-                } else {
-                    ['username', 'password', 'userData'].forEach(store.remove);
                 }
-                
-                const userData = store.get('userData');
-                showPage(userData ? 'welcome-page' : 'survey-page');
-                if (userData) {
-                    $('recommendations-container').innerHTML = getRecommendations(userData);
-                }
+                session.setAuthenticated(true);
+                showPage('survey-page');
+            } else {
+                alert('Invalid credentials. Please use:\nUsername: testuser\nPassword: password123');
             }
         });
 
+        // Handle survey form submission
         $('survey-form').addEventListener('submit', e => {
             e.preventDefault();
+
+            if (!session.isAuthenticated()) {
+                showPage('signin-page');
+                return;
+            }
+
             const userData = {
                 age: parseInt($('age').value),
                 occupation: $('occupation').value,
@@ -342,17 +321,68 @@
                 ownership: Array.from(document.querySelectorAll('input[name="ownership"]:checked')).map(cb => cb.value)
             };
 
-            if (validateForm(userData, {
-                age: v => !v || v < 0 || v > 120,
-                occupation: v => !v,
-                education: v => !v,
-                drivingLicence: v => !v
-            })) {
-                store.set('userData', userData);
-                showPage('welcome-page');
-                $('recommendations-container').innerHTML = getRecommendations(userData);
+            store.set('userData', userData);
+            showPage('welcome-page');
+            
+            // Generate recommendations
+            const recs = [];
+            if (userData.age >= 16 && userData.age <= 18) {
+                recs.push(...RECOMMENDATIONS.youth.items);
             }
+            userData.ownership?.forEach(item => {
+                if (RECOMMENDATIONS.ownership[item]) {
+                    recs.push(RECOMMENDATIONS.ownership[item]);
+                }
+            });
+            if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
+                recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
+            }
+            if (RECOMMENDATIONS.education[userData.education]) {
+                recs.push(RECOMMENDATIONS.education[userData.education]);
+            }
+
+            $('recommendations-container').innerHTML = recs.map(([title, description, link]) => `
+                <div class="govuk-card">
+                    <h2 class="govuk-heading-m">${title}</h2>
+                    <p>${description}</p>
+                    <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
+                </div>
+            `).join('');
+        });
+
+        // Handle sign out
+        $('signout-link').addEventListener('click', () => {
+            session.clear();
+            showPage('signin-page');
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication status
+            if (!session.isAuthenticated()) {
+                showPage('signin-page');
+                const savedUsername = store.get('username');
+                const savedPassword = store.get('password');
+                if (savedUsername && savedPassword) {
+                    $('username').value = savedUsername;
+                    $('password').value = savedPassword;
+                    $('save-credentials').checked = true;
+                }
+            } else {
+                const userData = store.get('userData');
+                showPage(userData ? 'welcome-page' : 'survey-page');
+            }
+
+            // Logo click handler
+            document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
+                if (session.isAuthenticated()) {
+                    const userData = store.get('userData');
+                    showPage(userData ? 'welcome-page' : 'survey-page');
+                } else {
+                    showPage('signin-page');
+                }
+            });
         });
     </script>
 </body>
-</html>  
+</html>
