@@ -37,7 +37,6 @@
             font-size: 30px;
             font-weight: bold;
             text-decoration: none;
-            cursor: pointer; /* Makes logo clickable */
         }
 
         .govuk-heading-l, .govuk-heading-m {
@@ -112,7 +111,6 @@
     </header>
 
     <main class="govuk-container">
-        <!-- Sign in page -->
         <div id="signin-page" class="active">
             <h1 class="govuk-heading-l">Sign in</h1>
             <form id="signin-form">
@@ -137,7 +135,6 @@
             </form>
         </div>
 
-        <!-- Survey page -->
         <div id="survey-page">
             <h1 class="govuk-heading-l">Survey</h1>
             <form id="survey-form">
@@ -208,7 +205,6 @@
             </form>
         </div>
 
-        <!-- Welcome page -->
         <div id="welcome-page">
             <h1 class="govuk-heading-l">Welcome to GOV.UK</h1>
             <p>Based on your information, we've recommended some pages that might be helpful:</p>
@@ -224,6 +220,31 @@
             remove: key => localStorage.removeItem(key)
         };
 
+        const RECOMMENDATIONS = {
+            youth: {
+                title: 'Information for Young People',
+                items: [
+                    ['Provisional licence', 'Apply for your first provisional driving licence', '/apply-first-provisional-driving-licence'],
+                    ['Young workers\' rights', 'Understanding your rights as a young worker', '/young-workers-rights']
+                ]
+            },
+            ownership: {
+                home: ['Property ownership', 'Information about property ownership and council tax', '/browse/housing-local-services'],
+                business: ['Running a business', 'Essential information for business owners', '/browse/business'],
+                car: ['Vehicle ownership', 'Information about vehicle tax and MOT', '/browse/driving/vehicle-ownership']
+            },
+            driving: {
+                yes: ['Driving licence', 'Keep your driving licence up to date', '/browse/driving/driving-licences'],
+                no: ['Learning to drive', 'Everything you need to know about learning to drive', '/browse/driving/learning-to-drive']
+            },
+            education: {
+                'gcse': ['Further education', 'Explore opportunities for further education', '/further-education-courses'],
+                'a-level': ['University', 'Information about universities and student loans', '/browse/education/universities-higher-education'],
+                'degree': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills'],
+                'postgrad': ['Professional development', 'Professional development opportunities', '/education/professional-development-and-skills']
+            }
+        };
+
         function showPage(id) {
             document.querySelectorAll('[id$="-page"]').forEach(page => {
                 page.style.display = page.id === id ? 'block' : 'none';
@@ -231,27 +252,14 @@
             });
         }
 
-        // Event Handlers
-        document.addEventListener('DOMContentLoaded', () => {
-            // Return to sign-in page when logo is clicked
-            document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
-                showPage('signin-page');
+        function validateForm(data, rules) {
+            return !Object.entries(rules).some(([field, test]) => {
+                const error = $(field + '-error');
+                const invalid = test(data[field]);
+                if (error) error.style.display = invalid ? 'block' : 'none';
+                return invalid;
             });
-
-            const userData = store.get('userData');
-            const username = store.get('username');
-            const password = store.get('password');
-            
-            if (username && password) {
-                $('username').value = username;
-                $('password').value = password;
-                $('save-credentials').checked = true;
-                if (userData) {
-                    showPage('welcome-page');
-                    $('recommendations-container').innerHTML = getRecommendations(userData);
-                }
-            }
-        });
+        }
 
         function getRecommendations(userData) {
             const recs = [];
@@ -275,13 +283,35 @@
             }
 
             return recs.map(([title, description, link]) => 
-                `<div class="govuk-card">
+                <div class="govuk-card">
                     <h2 class="govuk-heading-m">${title}</h2>
                     <p>${description}</p>
                     <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
-                </div>`
+                </div>
             ).join('');
         }
+
+        // Event Handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            // Event listener for logo click - Navigate back to the sign-in page
+            document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
+                showPage('signin-page');
+            });
+
+            const userData = store.get('userData');
+            const username = store.get('username');
+            const password = store.get('password');
+            
+            if (username && password) {
+                $('username').value = username;
+                $('password').value = password;
+                $('save-credentials').checked = true;
+                if (userData) {
+                    showPage('welcome-page');
+                    $('recommendations-container').innerHTML = getRecommendations(userData);
+                }
+            }
+        });
 
         $('signin-form').addEventListener('submit', e => {
             e.preventDefault();
@@ -330,4 +360,4 @@
         });
     </script>
 </body>
-</html>
+</html>  
