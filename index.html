@@ -213,149 +213,149 @@
     </main>
 
     <script>
-        <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Event listener for logo click - Navigate back to the sign-in page
-        document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
-            showPage('signin-page');
-        });
-
-        // Check if credentials are saved and auto-fill them
-        const username = store.get('username');
-        const password = store.get('password');
-        const userData = store.get('userData');
-
-        if (username && password) {
-            // Pre-fill credentials
-            $('username').value = username;
-            $('password').value = password;
-            $('save-credentials').checked = true;
-        }
-
-        if (userData) {
-            // If the user is already logged in, show the welcome page and recommendations
-            showPage('welcome-page');
-            $('recommendations-container').innerHTML = getRecommendations(userData);
-        } else {
-            // Show the sign-in page initially if no user data
-            showPage('signin-page');
-        }
-    });
-
-    // Sign in form submission handler
-    $('signin-form').addEventListener('submit', e => {
-        e.preventDefault();
-
-        const username = $('username').value;
-        const password = $('password').value;
-
-        // Simple validation for username and password
-        const validCredentials = username === 'testuser' && password === 'password123';
-
-        if (validCredentials) {
-            // Store credentials in localStorage if the user wants to save them
-            if ($('save-credentials').checked) {
-                store.set('username', username);
-                store.set('password', password);
-            } else {
-                // Remove saved credentials if "save" is unchecked
-                ['username', 'password'].forEach(store.remove);
-            }
-
-            // Check if user data exists
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Event listener for logo click - Navigate back to the sign-in page
+            document.querySelector('.govuk-header__logotype').addEventListener('click', () => {
+                showPage('signin-page');
+            });
+    
+            // Check if credentials are saved and auto-fill them
+            const username = store.get('username');
+            const password = store.get('password');
             const userData = store.get('userData');
-
+    
+            if (username && password) {
+                // Pre-fill credentials
+                $('username').value = username;
+                $('password').value = password;
+                $('save-credentials').checked = true;
+            }
+    
             if (userData) {
-                // Go directly to the welcome page with recommendations
+                // If the user is already logged in, show the welcome page and recommendations
                 showPage('welcome-page');
                 $('recommendations-container').innerHTML = getRecommendations(userData);
             } else {
-                // If no user data exists, show the survey page
-                showPage('survey-page');
-            }
-        } else {
-            // Show error message if credentials are incorrect
-            alert('Invalid credentials. Please try again.');
-        }
-    });
-
-    // Survey form submission handler
-    $('survey-form').addEventListener('submit', e => {
-        e.preventDefault();
-
-        const userData = {
-            age: parseInt($('age').value),
-            occupation: $('occupation').value,
-            education: $('education').value,
-            drivingLicence: document.querySelector('input[name="driving-licence"]:checked')?.value,
-            ownership: Array.from(document.querySelectorAll('input[name="ownership"]:checked')).map(cb => cb.value)
-        };
-
-        // Validate the survey form data
-        if (validateForm(userData, {
-            age: v => !v || v < 0 || v > 120,
-            occupation: v => !v,
-            education: v => !v,
-            drivingLicence: v => !v
-        })) {
-            // Store the user data in localStorage
-            store.set('userData', userData);
-
-            // Show the welcome page with recommendations
-            showPage('welcome-page');
-            $('recommendations-container').innerHTML = getRecommendations(userData);
-        } else {
-            alert('Please fill in all fields correctly.');
-        }
-    });
-
-    // Utility functions for showing pages and validation
-    function showPage(id) {
-        document.querySelectorAll('[id$="-page"]').forEach(page => {
-            page.style.display = page.id === id ? 'block' : 'none';
-            page.classList.toggle('active', page.id === id);
-        });
-    }
-
-    function validateForm(data, rules) {
-        return !Object.entries(rules).some(([field, test]) => {
-            const error = $(field + '-error');
-            const invalid = test(data[field]);
-            if (error) error.style.display = invalid ? 'block' : 'none';
-            return invalid;
-        });
-    }
-
-    function getRecommendations(userData) {
-        const recs = [];
-
-        // Collect recommendations based on user data
-        if (userData.age >= 16 && userData.age <= 18) {
-            recs.push(...RECOMMENDATIONS.youth.items);
-        }
-
-        userData.ownership?.forEach(item => {
-            if (RECOMMENDATIONS.ownership[item]) {
-                recs.push(RECOMMENDATIONS.ownership[item]);
+                // Show the sign-in page initially if no user data
+                showPage('signin-page');
             }
         });
-
-        if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
-            recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
+    
+        // Sign in form submission handler
+        $('signin-form').addEventListener('submit', e => {
+            e.preventDefault();
+    
+            const username = $('username').value;
+            const password = $('password').value;
+    
+            // Simple validation for username and password
+            const validCredentials = username === 'testuser' && password === 'password123';
+    
+            if (validCredentials) {
+                // Store credentials in localStorage if the user wants to save them
+                if ($('save-credentials').checked) {
+                    store.set('username', username);
+                    store.set('password', password);
+                } else {
+                    // Remove saved credentials if "save" is unchecked
+                    ['username', 'password'].forEach(store.remove);
+                }
+    
+                // Check if user data exists
+                const userData = store.get('userData');
+    
+                if (userData) {
+                    // Go directly to the welcome page with recommendations
+                    showPage('welcome-page');
+                    $('recommendations-container').innerHTML = getRecommendations(userData);
+                } else {
+                    // If no user data exists, show the survey page
+                    showPage('survey-page');
+                }
+            } else {
+                // Show error message if credentials are incorrect
+                alert('Invalid credentials. Please try again.');
+            }
+        });
+    
+        // Survey form submission handler
+        $('survey-form').addEventListener('submit', e => {
+            e.preventDefault();
+    
+            const userData = {
+                age: parseInt($('age').value),
+                occupation: $('occupation').value,
+                education: $('education').value,
+                drivingLicence: document.querySelector('input[name="driving-licence"]:checked')?.value,
+                ownership: Array.from(document.querySelectorAll('input[name="ownership"]:checked')).map(cb => cb.value)
+            };
+    
+            // Validate the survey form data
+            if (validateForm(userData, {
+                age: v => !v || v < 0 || v > 120,
+                occupation: v => !v,
+                education: v => !v,
+                drivingLicence: v => !v
+            })) {
+                // Store the user data in localStorage
+                store.set('userData', userData);
+    
+                // Show the welcome page with recommendations
+                showPage('welcome-page');
+                $('recommendations-container').innerHTML = getRecommendations(userData);
+            } else {
+                alert('Please fill in all fields correctly.');
+            }
+        });
+    
+        // Utility functions for showing pages and validation
+        function showPage(id) {
+            document.querySelectorAll('[id$="-page"]').forEach(page => {
+                page.style.display = page.id === id ? 'block' : 'none';
+                page.classList.toggle('active', page.id === id);
+            });
         }
-
-        if (RECOMMENDATIONS.education[userData.education]) {
-            recs.push(RECOMMENDATIONS.education[userData.education]);
+    
+        function validateForm(data, rules) {
+            return !Object.entries(rules).some(([field, test]) => {
+                const error = $(field + '-error');
+                const invalid = test(data[field]);
+                if (error) error.style.display = invalid ? 'block' : 'none';
+                return invalid;
+            });
         }
-
-        return recs.map(([title, description, link]) => 
-            `<div class="govuk-card">
-                <h2 class="govuk-heading-m">${title}</h2>
-                <p>${description}</p>
-                <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
-            </div>`
-        ).join('');
-    }
-</script>
+    
+        function getRecommendations(userData) {
+            const recs = [];
+    
+            // Collect recommendations based on user data
+            if (userData.age >= 16 && userData.age <= 18) {
+                recs.push(...RECOMMENDATIONS.youth.items);
+            }
+    
+            userData.ownership?.forEach(item => {
+                if (RECOMMENDATIONS.ownership[item]) {
+                    recs.push(RECOMMENDATIONS.ownership[item]);
+                }
+            });
+    
+            if (RECOMMENDATIONS.driving[userData.drivingLicence]) {
+                recs.push(RECOMMENDATIONS.driving[userData.drivingLicence]);
+            }
+    
+            if (RECOMMENDATIONS.education[userData.education]) {
+                recs.push(RECOMMENDATIONS.education[userData.education]);
+            }
+    
+            return recs.map(([title, description, link]) => 
+                `<div class="govuk-card">
+                    <h2 class="govuk-heading-m">${title}</h2>
+                    <p>${description}</p>
+                    <a href="https://www.gov.uk${link}" class="govuk-link">Learn more</a>
+                </div>`
+            ).join('');
+        }
+    </script>
 </body>
 </html>  
